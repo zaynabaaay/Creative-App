@@ -2,14 +2,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Job } from "@/lib/jobs";
+import { AvatarCircle } from "@/components/Avatar";
+import { formatJobDate } from "@/components/jobs/JobCard";
+import { RespondButton } from "./RespondButton";
 
-function formatDate(iso: string | null) {
-  if (!iso) return "Date TBC";
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-CA", {
-    day: "numeric",
-    month: "short",
-  });
-}
+type ResponderRow = {
+  responder_id: string;
+  profiles: {
+    display_name: string;
+    handle: string;
+    role_title: string;
+    avatar_url: string | null;
+  } | null;
+};
 
 export default async function JobDetailPage({
   params,
@@ -32,7 +37,7 @@ export default async function JobDetailPage({
     .maybeSingle<Job>();
   if (!job) notFound();
 
-  const [{ data: poster }, { count: responseCount }] = await Promise.all([
+  const [{ data: poster }, { data: responderRows }] = await Promise.all([
     supabase
       .from("profiles")
       .select("display_name, handle")
@@ -40,11 +45,19 @@ export default async function JobDetailPage({
       .maybeSingle<{ display_name: string; handle: string }>(),
     supabase
       .from("responses")
-      .select("id", { count: "exact", head: true })
-      .eq("job_id", job.id),
+      .select(
+        "responder_id, profiles!responses_responder_id_fkey(display_name, handle, role_title, avatar_url)",
+      )
+      .eq("job_id", job.id)
+      .order("created_at")
+      .returns<ResponderRow[]>(),
   ]);
 
+  const responders = responderRows ?? [];
   const mine = user?.id === job.poster_id;
+  const alreadyResponded = Boolean(
+    user && responders.some((r) => r.responder_id === user.id),
+  );
   const kindLabel = mine
     ? "Your posting"
     : job.poster_kind === "client"
@@ -87,11 +100,11 @@ export default async function JobDetailPage({
 
         <div className="flex flex-wrap gap-x-3.5 gap-y-1 font-sans text-[13px] text-muted font-semibold mt-2 mb-4">
           <span>{job.area}</span>
-          <span>{formatDate(job.date)}</span>
+          <span>{formatJobDate(job.date)}</span>
           <span className="text-ink">{job.budget ?? "Budget TBC"}</span>
         </div>
 
-        {poster && (
+        {poster && !mine && (
           <p className="font-sans text-sm text-muted mb-4">
             Posted by{" "}
             <Link
@@ -129,15 +142,55 @@ export default async function JobDetailPage({
         )}
 
         <div className="font-display text-xs font-bold uppercase tracking-[0.05em] text-faint mb-2.5">
-          {responseCount ?? 0} responded
+          {responders.length} responded
         </div>
-        <div className="bg-card border border-dashed border-line rounded-panel px-4 py-5 text-center mb-5">
-          <p className="font-sans text-sm text-muted leading-relaxed">
-            {mine
-              ? "No responses yet. Share the link to your scene to get the first ones in."
-              : "Responding lands in the next milestone — the feed and one-tap respond are on the bench being built."}
-          </p>
+        <div className="flex flex-col gap-2 mb-5">
+          {responders.map((r) =>
+            r.profiles ? (
+              <Link
+                key={r.responder_id}
+                href={`/u/${r.profiles.handle}`}
+                className="flex items-center gap-3 bg-card border border-line rounded-panel p-3"
+              >
+                <AvatarCircle
+                  name={r.profiles.display_name}
+                  seed={r.responder_id}
+                  imageUrl={r.profiles.avatar_url}
+                />
+                <span className="flex-1 min-w-0">
+                  <span className="block font-sans text-sm font-bold">
+                    {user?.id === r.responder_id
+                      ? "You"
+                      : r.profiles.display_name}
+                  </span>
+                  <span className="block font-sans text-xs text-muted truncate">
+                    {r.profiles.role_title}
+                  </span>
+                </span>
+                <span className="font-sans text-xs font-bold text-accent">
+                  View →
+                </span>
+              </Link>
+            ) : null,
+          )}
+          {responders.length === 0 && (
+            <div className="bg-card border border-dashed border-line rounded-panel px-4 py-5 text-center">
+              <p className="font-sans text-sm text-muted">
+                {mine
+                  ? "No responses yet. Share the link to your scene to get the first ones in."
+                  : "No responses yet — be the first."}
+              </p>
+            </div>
+          )}
         </div>
+
+        {!mine && user && job.status === "open" && poster && (
+          <RespondButton
+            jobId={job.id}
+            posterFirstName={poster.display_name.split(" ")[0]}
+            alreadyResponded={alreadyResponded}
+          />
+        )}
       </div>
     </main>
   );

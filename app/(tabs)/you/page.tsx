@@ -6,7 +6,7 @@ import { AvatarCircle } from "@/components/Avatar";
 import { StatCards } from "@/components/StatCards";
 import { WorkGrid } from "@/components/portfolio/WorkGrid";
 import { UploadWork } from "@/components/portfolio/UploadWork";
-import { signOut } from "../(auth)/actions";
+import { signOut } from "@/app/(auth)/actions";
 
 export default async function YouPage() {
   const supabase = await createClient();
