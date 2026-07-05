@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/*  Design tokens — must match creative-hub-prototype.jsx exactly      */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-paper: #fbfaf7;
+  --color-card: #ffffff;
+  --color-ink: #1a1917;
+  --color-muted: #8b8680;
+  --color-faint: #b4afa6;
+  --color-line: #ebe7de;
+  --color-line-soft: #f2eee6;
+  --color-accent: #2743e8;
+  --color-accent-soft: #ebeeff;
+  --color-chip: #f4f1ea;
+  /* frame behind the app shell on wide screens */
+  --color-frame: #edeae3;
+
+  --font-display: var(--font-bricolage), var(--font-inter), system-ui,
+    sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --radius-card: 18px;
+  --radius-panel: 14px;
+  --radius-field: 13px;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Editorial feel: hide scrollbars like the prototype, keep scrolling */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+}
+
+/* Quality floor: visible keyboard focus */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Subtle press feedback (prototype: scale 0.985) … */
+button:active {
+  transform: scale(0.985);
+}
+
+/* …unless the user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  button:active {
+    transform: none;
+  }
+}
