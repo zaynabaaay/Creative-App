@@ -6,7 +6,7 @@ import { signOut } from "./(auth)/actions";
 const MILESTONES: [string, boolean][] = [
   ["Foundation deployed", true],
   ["Sign up & log in", true],
-  ["Your portfolio", false],
+  ["Your portfolio", true],
   ["Post a job & respond", false],
   ["Messages", false],
 ];
@@ -56,14 +56,14 @@ export default async function Home() {
               </span>
               .
             </p>
-            {!viewer.profile && (
-              <Link
-                href="/onboarding"
-                className="font-sans text-sm font-semibold text-accent mt-1 inline-block"
-              >
-                Finish setting up your profile →
-              </Link>
-            )}
+            <Link
+              href={viewer.profile ? "/you" : "/onboarding"}
+              className="font-sans text-sm font-semibold text-accent mt-1 inline-block"
+            >
+              {viewer.profile
+                ? "Open your portfolio →"
+                : "Finish setting up your profile →"}
+            </Link>
             <form action={signOut} className="mt-2">
               <button
                 type="submit"
