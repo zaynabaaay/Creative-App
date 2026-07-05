@@ -26,6 +26,16 @@ npm run dev
 
 Then open http://localhost:3000.
 
+## Connect Supabase (one-time, ~5 minutes)
+
+1. Create a free project at [supabase.com](https://supabase.com) — region **Canada (Central)**.
+2. In the Supabase dashboard, open **SQL Editor**, paste the whole contents of
+   [`supabase/migrations/0001_init.sql`](./supabase/migrations/0001_init.sql), and click **Run**.
+   This creates every table, security rule, and image bucket the app uses.
+3. Copy `.env.example` to `.env.local` and fill in the **Project URL** and
+   **anon public key** from Project Settings → API. On Vercel, add the same
+   two values under Project → Settings → Environment Variables.
+
 ## Deploy (one-time setup, ~5 minutes)
 
 1. Create a free account at [vercel.com](https://vercel.com) (sign in with GitHub).
@@ -38,7 +48,7 @@ launch. **£0 until real traction.**
 ## Build progress
 
 - [x] **0 — Foundation**: scaffold, design tokens, fonts, this page
-- [ ] 1 — Auth (email sign-up / login)
+- [x] **1 — Auth**: email sign-up / login / onboarding (needs the Supabase setup above to switch on)
 - [ ] 2 — Profile + portfolio with image upload
 - [ ] 3 — Post a job
 - [ ] 4 — Jobs feed + job detail

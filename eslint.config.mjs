@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Reference design prototype — documentation, not shipped code.
+    "creative-hub-prototype.jsx",
   ]),
 ]);
 
