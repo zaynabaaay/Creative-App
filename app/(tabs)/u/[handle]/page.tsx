@@ -4,16 +4,29 @@ import Image from "next/image";
 import { getProfileBundle } from "@/lib/data/profiles";
 import { AvatarCircle } from "@/components/Avatar";
 import { StatCards } from "@/components/StatCards";
+import { createClient } from "@/lib/supabase/server";
+import { openConversation } from "@/app/actions/messaging";
 
 export default async function PublicPortfolioPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ handle: string }>;
+  searchParams: Promise<{ job?: string }>;
 }) {
-  const { handle } = await params;
+  const [{ handle }, { job: jobId }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const bundle = await getProfileBundle({ handle });
   if (!bundle) notFound();
   const { profile, items, stats } = bundle;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isSelf = user?.id === profile.id;
 
   return (
     <main className="flex-1 bg-paper">
@@ -105,14 +118,16 @@ export default async function PublicPortfolioPage({
             </div>
           )}
 
-          {/* Messaging lands in a later milestone; the button shows the
-              shape of the screen without pretending to work. */}
-          <button
-            disabled
-            className="w-full font-display text-base font-bold py-[15px] rounded-panel bg-chip text-faint"
-          >
-            Message {profile.display_name.split(" ")[0]} — coming soon
-          </button>
+          {!isSelf && user && (
+            <form action={openConversation.bind(null, profile.id, jobId)}>
+              <button
+                type="submit"
+                className="w-full font-display text-base font-bold py-[15px] rounded-panel bg-accent text-white"
+              >
+                Message {profile.display_name.split(" ")[0]}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </main>

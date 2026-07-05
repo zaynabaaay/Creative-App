@@ -108,7 +108,7 @@ export default async function JobDetailPage({
           <p className="font-sans text-sm text-muted mb-4">
             Posted by{" "}
             <Link
-              href={`/u/${poster.handle}`}
+              href={`/u/${poster.handle}?job=${job.id}`}
               className="font-semibold text-accent"
             >
               {poster.display_name}
@@ -149,7 +149,7 @@ export default async function JobDetailPage({
             r.profiles ? (
               <Link
                 key={r.responder_id}
-                href={`/u/${r.profiles.handle}`}
+                href={`/u/${r.profiles.handle}?job=${job.id}`}
                 className="flex items-center gap-3 bg-card border border-line rounded-panel p-3"
               >
                 <AvatarCircle
